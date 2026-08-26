@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Html } from "@react-three/drei";
 import { fetchRoomContent } from "../api/client";
 import Door from "./Door";
-import { usePortfolioStore } from "../store";
+import { usePortfolioStore, INNER_DOORS } from "../store";
 
 function ClassicRoomWall({ position, rotation, length }) {
   return (
@@ -55,10 +55,64 @@ function RoomCeilingLight({ position }) {
   );
 }
 
+function RoomWallSegment({ position, rotation, length }) {
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh position={[0, 0.1, 0.02]} receiveShadow>
+        <boxGeometry args={[length, 0.2, 0.12]} />
+        <meshStandardMaterial color="#140a05" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 0.7, 0]} receiveShadow>
+        <boxGeometry args={[length, 1.4, 0.1]} />
+        <meshStandardMaterial color="#2b1a10" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 1.45, 0.02]} receiveShadow castShadow>
+        <boxGeometry args={[length, 0.1, 0.12]} />
+        <meshStandardMaterial color="#140a05" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 2.75, 0]} receiveShadow>
+        <boxGeometry args={[length, 2.5, 0.1]} />
+        <meshStandardMaterial color="#1e2b22" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 3.9, 0.1]} receiveShadow castShadow>
+        <boxGeometry args={[length, 0.2, 0.3]} />
+        <meshStandardMaterial color="#140a05" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function RoomWallWithDoor({ position, rotation }) {
+  // The wall is 10 units long (-5 to 5 in its local space).
+  // The door is in the exact center (0) and is 1.7 units wide (-0.85 to 0.85).
+  // Left segment: -5 to -0.85 (length 4.15, center -2.925)
+  // Right segment: 0.85 to 5 (length 4.15, center 2.925)
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Left Segment */}
+      <RoomWallSegment position={[-2.925, 0, 0]} rotation={[0, 0, 0]} length={4.15} />
+      
+      {/* Right Segment */}
+      <RoomWallSegment position={[2.925, 0, 0]} rotation={[0, 0, 0]} length={4.15} />
+
+      {/* Top Filler above the door (height 2.8 to 4.0) */}
+      <group position={[0, 0, 0]}>
+        <mesh position={[0, 3.375, 0]} receiveShadow>
+          <boxGeometry args={[1.7, 1.25, 0.1]} />
+          <meshStandardMaterial color="#1e2b22" roughness={0.9} />
+        </mesh>
+        <mesh position={[0, 3.9, 0.1]} receiveShadow castShadow>
+          <boxGeometry args={[1.7, 0.2, 0.3]} />
+          <meshStandardMaterial color="#140a05" roughness={0.8} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
 export default function Room({ room }) {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const activeRoomId = usePortfolioStore((s) => s.activeRoomId);
 
   useEffect(() => {
     let alive = true;
@@ -74,21 +128,43 @@ export default function Room({ room }) {
 
   const [cx, , cz] = room.roomCenter;
   const accent = room.accentColor || "#3f4f8a";
+  
+  const isLeftRoom = room.doorPosition[0] < 0;
+  
+  const hasBackDoor = INNER_DOORS.some(d => d.doorPosition[0] === cx && d.doorPosition[2] === cz - 5)
+  const hasFrontDoor = INNER_DOORS.some(d => d.doorPosition[0] === cx && d.doorPosition[2] === cz + 5)
 
   return (
     <group position={[cx, 0, cz]}>
-      <ClassicRoomWall position={[0, 0, -5]} rotation={[0, 0, 0]} length={10} />
-      <ClassicRoomWall position={[-5, 0, 0]} rotation={[0, Math.PI / 2, 0]} length={10} />
-      <ClassicRoomWall position={[5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} length={10} />
-      <ClassicRoomWall position={[0, 0, 5]} rotation={[0, Math.PI, 0]} length={10} />
+      {/* Back Wall */}
+      {hasBackDoor ? (
+        <RoomWallWithDoor position={[0, 0, -4.9]} rotation={[0, 0, 0]} />
+      ) : (
+        <ClassicRoomWall position={[0, 0, -5]} rotation={[0, 0, 0]} length={10} />
+      )}
       
-      {/* Exit Door */}
-      <Door 
-        id="exit" 
-        position={[0, 0, 4.85]} 
-        rotationY={Math.PI} 
-        label="Exit" 
-      />
+      {/* Left Wall */}
+      {isLeftRoom ? (
+        <ClassicRoomWall position={[-5, 0, 0]} rotation={[0, Math.PI / 2, 0]} length={10} />
+      ) : (
+        // If room is on the right, the left wall touches the corridor. Shift it inward slightly to avoid Z-fighting.
+        <RoomWallWithDoor position={[-4.9, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+      )}
+      
+      {/* Right Wall */}
+      {!isLeftRoom ? (
+        <ClassicRoomWall position={[5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} length={10} />
+      ) : (
+        // If room is on the left, the right wall touches the corridor. Shift it inward slightly.
+        <RoomWallWithDoor position={[4.9, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+      )}
+      
+      {/* Front Wall */}
+      {hasFrontDoor ? (
+        <RoomWallWithDoor position={[0, 0, 4.9]} rotation={[0, Math.PI, 0]} />
+      ) : (
+        <ClassicRoomWall position={[0, 0, 5]} rotation={[0, Math.PI, 0]} length={10} />
+      )}
 
       {/* Ceiling */}
       <mesh position={[0, 4, 0]} receiveShadow>
@@ -101,65 +177,15 @@ export default function Room({ room }) {
 
       {/* Accent-colored rug with Gold Border */}
       <group position={[0, 0.02, 0]}>
-        {/* Main Rug */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0.005, 0]}>
           <planeGeometry args={[7.6, 7.6]} />
           <meshStandardMaterial color={accent} roughness={1} />
         </mesh>
-        {/* Gold Border */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
           <planeGeometry args={[8, 8]} />
           <meshStandardMaterial color="#c9a15a" roughness={0.5} metalness={0.2} />
         </mesh>
       </group>
-
-      {/* Basic pedestal in the center (Commented out for design purposes) */}
-      {/* 
-      <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.5, 0.6, 1, 32]} />
-        <meshStandardMaterial color="#2b1a10" roughness={0.4} />
-      </mesh>
-      */}
-      
-      {/* Content Floating Panel (Commented out for design purposes) */}
-      {/* 
-      {activeRoomId === room.id && (
-        <Html position={[0, 1.8, 0]} center transform scale={0.1}>
-          <div
-            style={{
-              width: 800,
-              background: "rgba(20, 15, 10, 0.9)",
-              border: `2px solid ${accent}`,
-              padding: 40,
-              borderRadius: 16,
-              color: "#fff",
-              fontFamily: "sans-serif",
-              backdropFilter: "blur(8px)",
-              boxShadow: `0 10px 40px rgba(0,0,0,0.5), 0 0 20px ${accent}40`,
-            }}
-          >
-            {loading ? (
-              <h2 style={{ textAlign: "center" }}>Loading {room.label}...</h2>
-            ) : content?.error ? (
-              <h2 style={{ textAlign: "center", color: "#ff6b6b" }}>
-                Failed to load content.
-              </h2>
-            ) : (
-              <>
-                <h1 style={{ fontSize: 48, marginBottom: 20, color: accent }}>
-                  {content?.title}
-                </h1>
-                <div
-                  style={{ fontSize: 24, lineHeight: 1.6, whiteSpace: "pre-wrap" }}
-                >
-                  {content?.body}
-                </div>
-              </>
-            )}
-          </div>
-        </Html>
-      )} 
-      */}
     </group>
   );
 }

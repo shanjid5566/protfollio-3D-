@@ -1,44 +1,75 @@
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
+import * as THREE from 'three'
 import { usePortfolioStore } from '../store'
 
 export default function Door({ id, position, rotationY = 0, label }) {
   const nearbyDoorId = usePortfolioStore((s) => s.nearbyDoorId)
+  const openDoors = usePortfolioStore((s) => s.openDoors)
+  
   const isNear = nearbyDoorId === id
+  const isOpen = openDoors.includes(id)
+  const hingeRef = useRef()
+
+  useFrame((state, delta) => {
+    if (hingeRef.current) {
+      // If the door is on the right wall (rotationY = -Math.PI / 2), it swings one way.
+      // We swing 90 degrees (Math.PI / 2) when open.
+      const targetRotation = isOpen ? Math.PI / 2 : 0
+      hingeRef.current.rotation.y = THREE.MathUtils.lerp(
+        hingeRef.current.rotation.y,
+        targetRotation,
+        delta * 8
+      )
+    }
+  })
 
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
-      {/* Grand Door Frame */}
-      <mesh position={[0, 1.4, 0.02]} castShadow receiveShadow>
-        <boxGeometry args={[1.7, 2.8, 0.1]} />
+      {/* Grand Door Frame (Left, Right, Top) */}
+      <mesh position={[-0.75, 1.35, 0.02]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 2.7, 0.1]} />
+        <meshStandardMaterial color="#d4c9b8" roughness={0.4} />
+      </mesh>
+      <mesh position={[0.75, 1.35, 0.02]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 2.7, 0.1]} />
+        <meshStandardMaterial color="#d4c9b8" roughness={0.4} />
+      </mesh>
+      <mesh position={[0, 2.75, 0.02]} castShadow receiveShadow>
+        <boxGeometry args={[1.7, 0.1, 0.1]} />
         <meshStandardMaterial color="#d4c9b8" roughness={0.4} />
       </mesh>
 
-      {/* Main Door Panel */}
-      <mesh position={[0, 1.35, 0.08]} castShadow>
-        <boxGeometry args={[1.3, 2.7, 0.06]} />
-        <meshStandardMaterial
-          color={isNear ? '#ffffff' : '#e8e0d5'}
-          roughness={0.5}
-          emissive={isNear ? '#ffeaad' : '#000'}
-          emissiveIntensity={isNear ? 0.2 : 0}
-        />
-      </mesh>
+      {/* Hinge Group (offset so the door swings from the edge instead of the center) */}
+      <group ref={hingeRef} position={[-0.65, 0, 0.08]}>
+        {/* Main Door Panel */}
+        <mesh position={[0.65, 1.35, 0]} castShadow>
+          <boxGeometry args={[1.3, 2.7, 0.06]} />
+          <meshStandardMaterial
+            color={isNear ? '#ffffff' : '#e8e0d5'}
+            roughness={0.5}
+            emissive={isNear && !isOpen ? '#ffeaad' : '#000'}
+            emissiveIntensity={isNear && !isOpen ? 0.2 : 0}
+          />
+        </mesh>
 
-      {/* Door Details (Panels) */}
-      <mesh position={[0, 1.95, 0.12]}>
-        <boxGeometry args={[0.9, 1.1, 0.02]} />
-        <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 0.75, 0.12]}>
-        <boxGeometry args={[0.9, 1.1, 0.02]} />
-        <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
-      </mesh>
+        {/* Door Details (Panels) */}
+        <mesh position={[0.65, 1.95, 0.04]}>
+          <boxGeometry args={[0.9, 1.1, 0.02]} />
+          <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
+        </mesh>
+        <mesh position={[0.65, 0.75, 0.04]}>
+          <boxGeometry args={[0.9, 1.1, 0.02]} />
+          <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
+        </mesh>
 
-      {/* Doorknob */}
-      <mesh position={[0.45, 1.3, 0.13]}>
-        <sphereGeometry args={[0.05, 16, 16]} />
-        <meshStandardMaterial color="#c9a15a" metalness={0.9} roughness={0.1} />
-      </mesh>
+        {/* Doorknob */}
+        <mesh position={[1.1, 1.3, 0.05]}>
+          <sphereGeometry args={[0.05, 16, 16]} />
+          <meshStandardMaterial color="#c9a15a" metalness={0.9} roughness={0.1} />
+        </mesh>
+      </group>
 
       {isNear && (
         <Html position={[0, 3.1, 0]} center distanceFactor={8}>
@@ -56,7 +87,7 @@ export default function Door({ id, position, rotationY = 0, label }) {
               boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
             }}
           >
-            {label} — OPEN
+            {label} — {isOpen ? 'CLICK TO CLOSE' : 'CLICK TO OPEN'}
           </div>
         </Html>
       )}

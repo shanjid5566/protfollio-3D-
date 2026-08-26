@@ -6,7 +6,7 @@ export function useMouseControls(cameraYawRef, moveInputRef) {
   const { gl } = useThree()
   const scrollResetTimeout = useRef(null)
   const setPointerLocked = usePortfolioStore((s) => s.setPointerLocked)
-  const openNearbyDoor = usePortfolioStore((s) => s.openNearbyDoor)
+  const toggleDoor = usePortfolioStore((s) => s.toggleDoor)
 
   useEffect(() => {
     const canvas = gl.domElement
@@ -15,7 +15,7 @@ export function useMouseControls(cameraYawRef, moveInputRef) {
       if (document.pointerLockElement !== canvas) {
         canvas.requestPointerLock()
       } else {
-        openNearbyDoor()
+        toggleDoor()
       }
     }
 
@@ -85,5 +85,5 @@ export function useMouseControls(cameraYawRef, moveInputRef) {
       document.removeEventListener('keyup', onKeyUp)
       clearTimeout(scrollResetTimeout.current)
     }
-  }, [gl, cameraYawRef, moveInputRef, setPointerLocked, openNearbyDoor])
+  }, [gl, cameraYawRef, moveInputRef, setPointerLocked, toggleDoor])
 }

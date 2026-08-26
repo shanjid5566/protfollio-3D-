@@ -7,43 +7,65 @@ const START_Z = 6;
 const END_Z = -26;
 const CENTER_Z = -10;
 
-function ClassicWall({ isLeft }) {
-  const sign = isLeft ? -1 : 1;
-  const x = (CORRIDOR_WIDTH / 2) * sign;
+function ClassicWallSegment({ isLeft, zStart, zEnd }) {
+  const sign = isLeft ? -1 : 1
+  const x = (CORRIDOR_WIDTH / 2) * sign
+  const length = Math.abs(zStart - zEnd)
+  const centerZ = (zStart + zEnd) / 2
 
   return (
     <group>
       {/* Baseboard */}
-      <mesh position={[x - 0.06 * sign, 0.1, CENTER_Z]} receiveShadow>
-        <boxGeometry args={[0.12, 0.2, CORRIDOR_LENGTH]} />
+      <mesh position={[x - 0.06 * sign, 0.1, centerZ]} receiveShadow>
+        <boxGeometry args={[0.12, 0.2, length]} />
         <meshStandardMaterial color="#140a05" roughness={0.8} />
       </mesh>
       
       {/* Lower Wall (Wainscoting) */}
-      <mesh position={[x, 0.7, CENTER_Z]} receiveShadow>
-        <boxGeometry args={[0.2, 1.4, CORRIDOR_LENGTH]} />
+      <mesh position={[x, 0.7, centerZ]} receiveShadow>
+        <boxGeometry args={[0.2, 1.4, length]} />
         <meshStandardMaterial color="#2b1a10" roughness={0.6} />
       </mesh>
       
       {/* Chair Rail */}
-      <mesh position={[x - 0.06 * sign, 1.45, CENTER_Z]} receiveShadow castShadow>
-        <boxGeometry args={[0.12, 0.1, CORRIDOR_LENGTH]} />
+      <mesh position={[x - 0.06 * sign, 1.45, centerZ]} receiveShadow castShadow>
+        <boxGeometry args={[0.12, 0.1, length]} />
         <meshStandardMaterial color="#140a05" roughness={0.6} />
       </mesh>
       
       {/* Upper Wall (Classic Wallpaper/Paint) */}
-      <mesh position={[x, 2.75, CENTER_Z]} receiveShadow>
-        <boxGeometry args={[0.2, 2.5, CORRIDOR_LENGTH]} />
+      <mesh position={[x, 2.75, centerZ]} receiveShadow>
+        <boxGeometry args={[0.2, 2.5, length]} />
         <meshStandardMaterial color="#1e2b22" roughness={0.9} />
       </mesh>
 
       {/* Crown Molding */}
-      <mesh position={[x - 0.1 * sign, 3.9, CENTER_Z]} receiveShadow castShadow>
-        <boxGeometry args={[0.3, 0.2, CORRIDOR_LENGTH]} />
+      <mesh position={[x - 0.1 * sign, 3.9, centerZ]} receiveShadow castShadow>
+        <boxGeometry args={[0.3, 0.2, length]} />
         <meshStandardMaterial color="#140a05" roughness={0.8} />
       </mesh>
     </group>
-  );
+  )
+}
+
+function DoorTopFiller({ isLeft, z }) {
+  const sign = isLeft ? -1 : 1
+  const x = (CORRIDOR_WIDTH / 2) * sign
+  // Door is 1.7 wide, and goes up to 2.8. Ceiling is 4.0.
+  // We need a block from 2.8 to 4.0. (Height = 1.2, Center Y = 3.4)
+  return (
+    <group>
+      <mesh position={[x, 3.375, z]} receiveShadow>
+        <boxGeometry args={[0.2, 1.25, 1.7]} />
+        <meshStandardMaterial color="#1e2b22" roughness={0.9} />
+      </mesh>
+      {/* Crown Molding over the door */}
+      <mesh position={[x - 0.1 * sign, 3.9, z]} receiveShadow castShadow>
+        <boxGeometry args={[0.3, 0.2, 1.7]} />
+        <meshStandardMaterial color="#140a05" roughness={0.8} />
+      </mesh>
+    </group>
+  )
 }
 
 function EndCaps() {
@@ -180,8 +202,18 @@ function TableWithFlower({ position }) {
 export default function Corridor() {
   return (
     <group>
-      <ClassicWall isLeft={true} />
-      <ClassicWall isLeft={false} />
+      {/* Left Wall Segments (Doors at -6 and -16) */}
+      <ClassicWallSegment isLeft={true} zStart={START_Z} zEnd={-5.15} />
+      <DoorTopFiller isLeft={true} z={-6} />
+      <ClassicWallSegment isLeft={true} zStart={-6.85} zEnd={-15.15} />
+      <DoorTopFiller isLeft={true} z={-16} />
+      <ClassicWallSegment isLeft={true} zStart={-16.85} zEnd={END_Z} />
+
+      {/* Right Wall Segments (Door at -6) */}
+      <ClassicWallSegment isLeft={false} zStart={START_Z} zEnd={-5.15} />
+      <DoorTopFiller isLeft={false} z={-6} />
+      <ClassicWallSegment isLeft={false} zStart={-6.85} zEnd={END_Z} />
+
       <EndCaps />
       <Ceiling />
       <Carpet />

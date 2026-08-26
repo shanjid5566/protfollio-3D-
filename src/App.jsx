@@ -4,7 +4,8 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import Corridor from "./components/Corridor";
 import Room from "./components/Room";
 import Character from "./components/Character";
-import { usePortfolioStore, ROOMS } from "./store";
+import { usePortfolioStore, ROOMS, INNER_DOORS } from "./store";
+import Door from "./components/Door";
 
 function WorldFloor() {
   return (
@@ -39,6 +40,15 @@ export default function App() {
         <Corridor />
         {ROOMS.map((r) => (
           <Room key={r.id} room={r} />
+        ))}
+        {INNER_DOORS.map((d) => (
+          <Door
+            key={d.id}
+            id={d.id}
+            position={d.doorPosition}
+            rotationY={d.doorRotationY}
+            label={d.label}
+          />
         ))}
 
         <ContactShadows
