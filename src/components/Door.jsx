@@ -7,49 +7,53 @@ export default function Door({ id, position, rotationY = 0, label }) {
 
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
-      <mesh position={[0, 1.15, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.3, 2.5, 0.14]} />
-        <meshStandardMaterial color="#3a2414" roughness={0.6} metalness={0.05} />
+      {/* Grand Door Frame */}
+      <mesh position={[0, 1.4, 0.02]} castShadow receiveShadow>
+        <boxGeometry args={[1.7, 2.8, 0.1]} />
+        <meshStandardMaterial color="#d4c9b8" roughness={0.4} />
       </mesh>
 
-      <mesh position={[0, 1.1, 0.09]} castShadow>
-        <boxGeometry args={[1.0, 2.2, 0.06]} />
+      {/* Main Door Panel */}
+      <mesh position={[0, 1.35, 0.08]} castShadow>
+        <boxGeometry args={[1.3, 2.7, 0.06]} />
         <meshStandardMaterial
-          color={isNear ? '#8a4a2a' : '#6b3a20'}
+          color={isNear ? '#ffffff' : '#e8e0d5'}
           roughness={0.5}
-          metalness={0.1}
-          emissive={isNear ? '#ff9d52' : '#000000'}
-          emissiveIntensity={isNear ? 0.25 : 0}
+          emissive={isNear ? '#ffeaad' : '#000'}
+          emissiveIntensity={isNear ? 0.2 : 0}
         />
       </mesh>
 
-      <mesh position={[0, 1.6, 0.13]}>
-        <boxGeometry args={[0.7, 0.6, 0.02]} />
-        <meshStandardMaterial color="#4a2a16" roughness={0.6} />
+      {/* Door Details (Panels) */}
+      <mesh position={[0, 1.95, 0.12]}>
+        <boxGeometry args={[0.9, 1.1, 0.02]} />
+        <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
       </mesh>
-      <mesh position={[0, 0.7, 0.13]}>
-        <boxGeometry args={[0.7, 0.8, 0.02]} />
-        <meshStandardMaterial color="#4a2a16" roughness={0.6} />
+      <mesh position={[0, 0.75, 0.12]}>
+        <boxGeometry args={[0.9, 1.1, 0.02]} />
+        <meshStandardMaterial color="#c4b7a3" roughness={0.6} />
       </mesh>
 
-      <mesh position={[0.35, 1.1, 0.14]}>
-        <sphereGeometry args={[0.045, 12, 12]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.7} roughness={0.3} />
+      {/* Doorknob */}
+      <mesh position={[0.45, 1.3, 0.13]}>
+        <sphereGeometry args={[0.05, 16, 16]} />
+        <meshStandardMaterial color="#c9a15a" metalness={0.9} roughness={0.1} />
       </mesh>
 
       {isNear && (
-        <Html position={[0, 2.9, 0]} center distanceFactor={8}>
+        <Html position={[0, 3.1, 0]} center distanceFactor={8}>
           <div
             style={{
-              padding: '4px 14px',
-              background: 'rgba(0,0,0,0.75)',
-              color: '#fff',
-              borderRadius: 6,
-              fontFamily: 'sans-serif',
-              fontSize: 14,
+              padding: '6px 16px',
+              background: 'rgba(20, 15, 10, 0.85)',
+              color: '#f5deb3',
+              borderRadius: 4,
+              fontFamily: 'Georgia, serif',
+              fontSize: 16,
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
-              border: '1px solid #ff9d52',
+              border: '1px solid #c9a15a',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
             }}
           >
             {label} — OPEN

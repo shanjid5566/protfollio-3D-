@@ -2,10 +2,63 @@ import { useEffect, useState } from "react";
 import { Html } from "@react-three/drei";
 import { fetchRoomContent } from "../api/client";
 import Door from "./Door";
+import { usePortfolioStore } from "../store";
+
+function ClassicRoomWall({ position, rotation, length }) {
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Baseboard */}
+      <mesh position={[0, 0.1, 0.02]} receiveShadow>
+        <boxGeometry args={[length, 0.2, 0.12]} />
+        <meshStandardMaterial color="#140a05" roughness={0.8} />
+      </mesh>
+      {/* Lower Wall */}
+      <mesh position={[0, 0.7, 0]} receiveShadow>
+        <boxGeometry args={[length, 1.4, 0.1]} />
+        <meshStandardMaterial color="#2b1a10" roughness={0.6} />
+      </mesh>
+      {/* Chair Rail */}
+      <mesh position={[0, 1.45, 0.02]} receiveShadow castShadow>
+        <boxGeometry args={[length, 0.1, 0.12]} />
+        <meshStandardMaterial color="#140a05" roughness={0.6} />
+      </mesh>
+      {/* Upper Wall */}
+      <mesh position={[0, 2.75, 0]} receiveShadow>
+        <boxGeometry args={[length, 2.5, 0.1]} />
+        <meshStandardMaterial color="#1e2b22" roughness={0.9} />
+      </mesh>
+      {/* Crown Molding */}
+      <mesh position={[0, 3.9, 0.1]} receiveShadow castShadow>
+        <boxGeometry args={[length, 0.2, 0.3]} />
+        <meshStandardMaterial color="#140a05" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function RoomCeilingLight({ position }) {
+  return (
+    <group position={position}>
+      {/* Base */}
+      <mesh position={[0, 3.95, 0]}>
+        <cylinderGeometry args={[0.4, 0.5, 0.1, 16]} />
+        <meshStandardMaterial color="#b8923f" metalness={0.8} roughness={0.2} />
+      </mesh>
+      {/* Glass dome */}
+      <mesh position={[0, 3.75, 0]}>
+        <sphereGeometry args={[0.3, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffeaad" emissiveIntensity={1.5} />
+      </mesh>
+      {/* Actual Light */}
+      <pointLight position={[0, 3.5, 0]} intensity={4.5} distance={25} decay={1.5} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.001} color="#ffeaad" />
+    </group>
+  );
+}
 
 export default function Room({ room }) {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const activeRoomId = usePortfolioStore((s) => s.activeRoomId);
 
   useEffect(() => {
     let alive = true;
@@ -24,20 +77,11 @@ export default function Room({ room }) {
 
   return (
     <group position={[cx, 0, cz]}>
-      {/* Room walls */}
-      <mesh position={[0, 2, -5]} receiveShadow>
-        <boxGeometry args={[10, 4, 0.2]} />
-        <meshStandardMaterial color="#f0ead8" roughness={0.85} />
-      </mesh>
-      <mesh position={[-5, 2, 0]} receiveShadow>
-        <boxGeometry args={[0.2, 4, 10]} />
-        <meshStandardMaterial color="#f0ead8" roughness={0.85} />
-      </mesh>
-      <mesh position={[5, 2, 0]} receiveShadow>
-        <boxGeometry args={[0.2, 4, 10]} />
-        <meshStandardMaterial color="#f0ead8" roughness={0.85} />
-      </mesh>
-
+      <ClassicRoomWall position={[0, 0, -5]} rotation={[0, 0, 0]} length={10} />
+      <ClassicRoomWall position={[-5, 0, 0]} rotation={[0, Math.PI / 2, 0]} length={10} />
+      <ClassicRoomWall position={[5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} length={10} />
+      <ClassicRoomWall position={[0, 0, 5]} rotation={[0, Math.PI, 0]} length={10} />
+      
       {/* Exit Door */}
       <Door 
         id="exit" 
@@ -46,123 +90,76 @@ export default function Room({ room }) {
         label="Exit" 
       />
 
-      {/* Front wall (entrance side) — without this, looking back toward
-          where the player enters shows nothing but empty space, since
-          rooms live far away from the corridor with no other geometry
-          nearby. Exiting is handled by the "Back to Corridor" button, so
-          this wall doesn't need an actual doorway cut into it. */}
-      <mesh position={[0, 2, 5]} receiveShadow>
-        <boxGeometry args={[10, 4, 0.2]} />
-        <meshStandardMaterial color="#f0ead8" roughness={0.85} />
-      </mesh>
-      {/* Ceiling, so the room isn't open to the black void above */}
-      <mesh position={[0, 4, 0]}>
+      {/* Ceiling */}
+      <mesh position={[0, 4, 0]} receiveShadow>
         <boxGeometry args={[10, 0.2, 10]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        <meshStandardMaterial color="#d4c9b8" roughness={1} />
       </mesh>
+      
+      {/* Room Ceiling Light */}
+      <RoomCeilingLight position={[0, 0, 0]} />
 
-      {/* Accent-colored rug — each room gets its own color so they don't
-          all look like the same plain white box. Kept clear of the floor
-          plane (y offset) to avoid z-fighting. */}
-      <mesh
-        position={[0, 0.011, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[7, 7]} />
-        <meshStandardMaterial color={accent} roughness={0.9} />
-      </mesh>
+      {/* Accent-colored rug with Gold Border */}
+      <group position={[0, 0.02, 0]}>
+        {/* Main Rug */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0.005, 0]}>
+          <planeGeometry args={[7.6, 7.6]} />
+          <meshStandardMaterial color={accent} roughness={1} />
+        </mesh>
+        {/* Gold Border */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
+          <planeGeometry args={[8, 8]} />
+          <meshStandardMaterial color="#c9a15a" roughness={0.5} metalness={0.2} />
+        </mesh>
+      </group>
 
-      {/* Accent-colored trim band along the back wall, protruding clearly
-          past the wall face (not coplanar with it) to avoid z-fighting. */}
-      <mesh position={[0, 2.6, -4.85]}>
-        <boxGeometry args={[9.4, 0.3, 0.1]} />
-        <meshStandardMaterial color={accent} roughness={0.6} />
+      {/* Basic pedestal in the center (Commented out for design purposes) */}
+      {/* 
+      <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.5, 0.6, 1, 32]} />
+        <meshStandardMaterial color="#2b1a10" roughness={0.4} />
       </mesh>
-      {/* Gold baseboard, matching the corridor's, along the two side walls.
-          Positioned flush against the wall's inner face, protruding into
-          the room — same fix as the corridor trim (avoids both a floating
-          gap and z-fighting). */}
-      <mesh position={[-4.85, 0.18, 0]}>
-        <boxGeometry args={[0.1, 0.36, 9.6]} />
-        <meshStandardMaterial color="#b8923f" metalness={0.4} roughness={0.4} />
-      </mesh>
-      <mesh position={[4.85, 0.18, 0]}>
-        <boxGeometry args={[0.1, 0.36, 9.6]} />
-        <meshStandardMaterial color="#b8923f" metalness={0.4} roughness={0.4} />
-      </mesh>
-
-      {/* Content panel — data fetched from the Express/PostgreSQL backend renders here */}
-      <Html position={[0, 2, -4.8]} transform distanceFactor={4} occlude>
-        <div
-          style={{
-            width: 420,
-            padding: 20,
-            background: "rgba(255,255,255,0.95)",
-            borderRadius: 10,
-            fontFamily: "sans-serif",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-            borderTop: `6px solid ${accent}`,
-          }}
-        >
-          <h2 style={{ margin: "0 0 10px" }}>{room.label}</h2>
-          {loading && <p>Loading...</p>}
-          {!loading && content?.error && <p>Couldn't load this content.</p>}
-          {!loading && content && !content.error && (
-            <RoomContentBody
-              roomId={room.id}
-              content={content}
-              accent={accent}
-            />
-          )}
-        </div>
-      </Html>
-    </group>
-  );
-}
-
-function RoomContentBody({ roomId, content, accent }) {
-  if (roomId === "about") {
-    return <p>{content.bio}</p>;
-  }
-  if (roomId === "projects") {
-    return (
-      <ul style={{ paddingLeft: 18 }}>
-        {content.items?.map((p) => (
-          <li key={p.id} style={{ marginBottom: 8 }}>
-            <strong>{p.title}</strong> — {p.description}
-            {p.link && (
-              <>
-                {" "}
-                <a href={p.link} target="_blank" rel="noreferrer">
-                  link
-                </a>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-    );
-  }
-  if (roomId === "skills") {
-    return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {content.items?.map((s) => (
-          <span
-            key={s}
+      */}
+      
+      {/* Content Floating Panel (Commented out for design purposes) */}
+      {/* 
+      {activeRoomId === room.id && (
+        <Html position={[0, 1.8, 0]} center transform scale={0.1}>
+          <div
             style={{
-              padding: "4px 10px",
-              background: accent,
+              width: 800,
+              background: "rgba(20, 15, 10, 0.9)",
+              border: `2px solid ${accent}`,
+              padding: 40,
+              borderRadius: 16,
               color: "#fff",
-              borderRadius: 20,
-              fontSize: 13,
+              fontFamily: "sans-serif",
+              backdropFilter: "blur(8px)",
+              boxShadow: `0 10px 40px rgba(0,0,0,0.5), 0 0 20px ${accent}40`,
             }}
           >
-            {s}
-          </span>
-        ))}
-      </div>
-    );
-  }
-  return null;
+            {loading ? (
+              <h2 style={{ textAlign: "center" }}>Loading {room.label}...</h2>
+            ) : content?.error ? (
+              <h2 style={{ textAlign: "center", color: "#ff6b6b" }}>
+                Failed to load content.
+              </h2>
+            ) : (
+              <>
+                <h1 style={{ fontSize: 48, marginBottom: 20, color: accent }}>
+                  {content?.title}
+                </h1>
+                <div
+                  style={{ fontSize: 24, lineHeight: 1.6, whiteSpace: "pre-wrap" }}
+                >
+                  {content?.body}
+                </div>
+              </>
+            )}
+          </div>
+        </Html>
+      )} 
+      */}
+    </group>
+  );
 }

@@ -9,8 +9,8 @@ import { usePortfolioStore, ROOMS } from "./store";
 function WorldFloor() {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -8]} receiveShadow>
-      <planeGeometry args={[60, 60]} />
-      <meshStandardMaterial color="#7a5f42" roughness={0.5} metalness={0.02} />
+      <planeGeometry args={[100, 100]} />
+      <meshStandardMaterial color="#0a0604" roughness={0.15} metalness={0.4} />
     </mesh>
   );
 }
@@ -23,20 +23,17 @@ export default function App() {
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <Canvas shadows camera={{ fov: 70, near: 0.1, far: 100 }}>
-        <color attach="background" args={["#141210"]} />
+        <color attach="background" args={["#0a0806"]} />
+        <fog attach="fog" args={["#0a0806", 8, 40]} />
 
-        <ambientLight intensity={0.55} />
+        <ambientLight intensity={0.3} />
         <directionalLight
-          position={[8, 10, 4]}
-          intensity={1.4}
-          castShadow
-          shadow-mapSize={[2048, 2048]}
+          position={[5, 10, -5]}
+          intensity={0.4}
+          color="#b3c6ff"
         />
-        <directionalLight position={[-8, 10, 4]} intensity={1.4} />
-        <pointLight position={[0, 3.6, -6]} intensity={0.6} color="#ffdcb0" />
-        <pointLight position={[0, 3.6, -16]} intensity={0.6} color="#ffdcb0" />
 
-        <Environment preset="apartment" />
+        <Environment preset="city" />
 
         <WorldFloor />
         <Corridor />
@@ -159,7 +156,7 @@ function Hint() {
       }}
     >
       Click once = enable mouse-look &nbsp;|&nbsp; Move mouse = look around
-      &nbsp;|&nbsp; Scroll = walk &nbsp;|&nbsp; Click a door = open
+      &nbsp;|&nbsp; WASD or Scroll = walk &nbsp;|&nbsp; Click a door = open
     </div>
   );
 }

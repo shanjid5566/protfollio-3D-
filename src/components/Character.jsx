@@ -30,7 +30,7 @@ export default function Character() {
 
   // Facing into the corridor (toward the rooms) by default.
   const cameraYaw = useRef(Math.PI)     // updated by mouse movement (look left/right)
-  const moveInput = useRef(0)           // -1 / 0 / 1 — updated by scroll wheel
+  const moveInput = useRef({ forward: 0, strafe: 0 })
 
   const activeRoomId = usePortfolioStore((s) => s.activeRoomId)
   const setPlayerPosition = usePortfolioStore((s) => s.setPlayerPosition)
@@ -56,17 +56,30 @@ export default function Character() {
   useFrame((_, delta) => {
     const currentActiveRoomId = usePortfolioStore.getState().activeRoomId
 
-    // ---- Forward/backward walk, driven by scroll wheel ----
-    if (moveInput.current !== 0) {
+    // ---- FPS Movement (WASD + Scroll) ----
+    if (moveInput.current.forward !== 0 || moveInput.current.strafe !== 0) {
       const forward = new THREE.Vector3(
         Math.sin(cameraYaw.current),
         0,
         Math.cos(cameraYaw.current)
-      )
-      const step = WALK_SPEED * delta * moveInput.current
-      posVec.current.addScaledVector(forward, step)
-      clampToBounds(posVec.current, currentActiveRoomId)
-      setPlayerPosition([posVec.current.x, 0, posVec.current.z])
+      ).normalize()
+      
+      const right = new THREE.Vector3(
+        Math.sin(cameraYaw.current - Math.PI / 2),
+        0,
+        Math.cos(cameraYaw.current - Math.PI / 2)
+      ).normalize()
+
+      const moveVec = new THREE.Vector3()
+      moveVec.addScaledVector(forward, moveInput.current.forward)
+      moveVec.addScaledVector(right, moveInput.current.strafe)
+      
+      if (moveVec.length() > 0) {
+        moveVec.normalize()
+        posVec.current.addScaledVector(moveVec, WALK_SPEED * delta)
+        clampToBounds(posVec.current, currentActiveRoomId)
+        setPlayerPosition([posVec.current.x, 0, posVec.current.z])
+      }
     }
 
     // ---- Camera: first-person, follows player position, yaw controlled by mouse ----
