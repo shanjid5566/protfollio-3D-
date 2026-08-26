@@ -104,12 +104,7 @@ function isPositionValid(vec) {
   return true
 }
 
-function clampToBounds(vec) {
-  // A simple fallback for the camera, not used for player movement anymore
-  if (!isPositionValid(vec)) {
-    vec.x = THREE.MathUtils.clamp(vec.x, -2.8, 2.8)
-  }
-}
+
 
 function RealisticAvatar({ characterRef, isMoving }) {
   const { scene, animations } = useGLTF('/avatar.glb')
@@ -232,9 +227,15 @@ export default function Character() {
       posVec.current.z + backOffset.z
     )
 
-    // Clamp camera position loosely so it doesn't clip walls
+    // Raycast-like camera collision: if camera is in wall, slide it towards player
     const camVec = idealCamPos.clone()
-    clampToBounds(camVec)
+    if (!isPositionValid(camVec)) {
+      const dir = new THREE.Vector3().subVectors(posVec.current, camVec).normalize()
+      for (let i = 0; i < 20; i++) {
+        camVec.addScaledVector(dir, 0.1)
+        if (isPositionValid(camVec)) break
+      }
+    }
 
     camera.position.set(
       camVec.x,

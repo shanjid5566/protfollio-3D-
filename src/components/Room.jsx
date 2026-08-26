@@ -83,27 +83,18 @@ function RoomWallSegment({ position, rotation, length }) {
 }
 
 function RoomWallWithDoor({ position, rotation }) {
-  // The wall is 10 units long (-5 to 5 in its local space).
-  // The door is in the exact center (0) and is 1.7 units wide (-0.85 to 0.85).
-  // Left segment: -5 to -0.85 (length 4.15, center -2.925)
-  // Right segment: 0.85 to 5 (length 4.15, center 2.925)
   return (
     <group position={position} rotation={rotation}>
-      {/* Left Segment */}
       <RoomWallSegment position={[-2.925, 0, 0]} rotation={[0, 0, 0]} length={4.15} />
-      
-      {/* Right Segment */}
       <RoomWallSegment position={[2.925, 0, 0]} rotation={[0, 0, 0]} length={4.15} />
-
-      {/* Top Filler above the door (height 2.8 to 4.0) */}
       <group position={[0, 0, 0]}>
         <mesh position={[0, 3.375, 0]} receiveShadow>
           <boxGeometry args={[1.7, 1.25, 0.1]} />
-          <meshStandardMaterial color="#1e2b22" roughness={0.9} />
+          <meshStandardMaterial color="red" roughness={0.9} />
         </mesh>
         <mesh position={[0, 3.9, 0.1]} receiveShadow castShadow>
           <boxGeometry args={[1.7, 0.2, 0.3]} />
-          <meshStandardMaterial color="#140a05" roughness={0.8} />
+          <meshStandardMaterial color="red" roughness={0.8} />
         </mesh>
       </group>
     </group>
@@ -131,8 +122,9 @@ export default function Room({ room }) {
   
   const isLeftRoom = room.doorPosition[0] < 0;
   
-  const hasBackDoor = INNER_DOORS.some(d => d.doorPosition[0] === cx && d.doorPosition[2] === cz - 5)
-  const hasFrontDoor = INNER_DOORS.some(d => d.doorPosition[0] === cx && d.doorPosition[2] === cz + 5)
+  // Hardcoded for absolute certainty instead of relying on float comparisons
+  const hasBackDoor = room.id === 'about' || room.id === 'projects';
+  const hasFrontDoor = room.id === 'skills' || room.id === 'contact';
 
   return (
     <group position={[cx, 0, cz]}>
