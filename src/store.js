@@ -67,6 +67,16 @@ export function isInCorridor(pos) {
   )
 }
 
+export function isInRoom(pos, roomId) {
+  const room = ROOMS.find((r) => r.id === roomId)
+  if (!room) return false
+  const rxMin = room.roomCenter[0] - 4.2
+  const rxMax = room.roomCenter[0] + 4.2
+  const rzMin = room.roomCenter[2] - 4.2
+  const rzMax = room.roomCenter[2] + 4.2
+  return pos[0] >= rxMin && pos[0] <= rxMax && pos[2] >= rzMin && pos[2] <= rzMax
+}
+
 export const CORRIDOR_START = [0, 0, 4] // player starts here
 
 export const usePortfolioStore = create((set, get) => ({
