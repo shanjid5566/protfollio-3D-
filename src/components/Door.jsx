@@ -2,14 +2,16 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
-import { usePortfolioStore } from '../store'
+import { usePortfolioStore, isInCorridor } from '../store'
 
-export default function Door({ id, position, rotationY = 0, label }) {
+export default function Door({ id, position, rotationY = 0, label, showLabel = true, isInnerDoor = false }) {
   const nearbyDoorId = usePortfolioStore((s) => s.nearbyDoorId)
   const openDoors = usePortfolioStore((s) => s.openDoors)
+  const playerPosition = usePortfolioStore((s) => s.playerPosition)
   
   const isNear = nearbyDoorId === id
   const isOpen = openDoors.includes(id)
+  const inCorridor = isInCorridor(playerPosition)
   const hingeRef = useRef()
 
   useFrame((state, delta) => {
@@ -71,25 +73,27 @@ export default function Door({ id, position, rotationY = 0, label }) {
         </mesh>
       </group>
 
-      {/* Always-visible room name above the door */}
-      <Html position={[0, 3.1, 0]} center distanceFactor={8}>
-        <div
-          style={{
-            padding: '6px 16px',
-            background: 'rgba(20, 15, 10, 0.85)',
-            color: '#f5deb3',
-            borderRadius: 4,
-            fontFamily: 'Georgia, serif',
-            fontSize: 16,
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none',
-            border: '1px solid #c9a15a',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-          }}
-        >
-          {label}
-        </div>
-      </Html>
+      {/* Room name above the door */}
+      {showLabel && ((isInnerDoor && !inCorridor) || (!isInnerDoor && inCorridor)) && (
+        <Html position={[0, 3.1, 0]} center distanceFactor={8}>
+          <div
+            style={{
+              padding: '6px 16px',
+              background: 'rgba(20, 15, 10, 0.85)',
+              color: '#f5deb3',
+              borderRadius: 4,
+              fontFamily: 'Georgia, serif',
+              fontSize: 24,
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              border: '1px solid #c9a15a',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+            }}
+          >
+            {label}
+          </div>
+        </Html>
+      )}
 
       {/* Interactive prompt when nearby */}
       {isNear && (

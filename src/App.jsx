@@ -50,6 +50,7 @@ export default function App() {
             position={d.doorPosition}
             rotationY={d.doorRotationY}
             label={d.label}
+            isInnerDoor={true}
           />
         ))}
 

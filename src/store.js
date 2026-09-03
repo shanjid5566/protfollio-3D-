@@ -56,6 +56,17 @@ export const INNER_DOORS = [
   }
 ]
 
+export const CORRIDOR_BOUNDS = { minX: -2.8, maxX: 2.8, minZ: -24, maxZ: 5.3 }
+
+export function isInCorridor(pos) {
+  return (
+    pos[0] >= CORRIDOR_BOUNDS.minX &&
+    pos[0] <= CORRIDOR_BOUNDS.maxX &&
+    pos[2] >= CORRIDOR_BOUNDS.minZ &&
+    pos[2] <= CORRIDOR_BOUNDS.maxZ
+  )
+}
+
 export const CORRIDOR_START = [0, 0, 4] // player starts here
 
 export const usePortfolioStore = create((set, get) => ({
