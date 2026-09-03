@@ -50,7 +50,7 @@ function RoomCeilingLight({ position }) {
         <meshStandardMaterial color="#ffffff" emissive="#ffeaad" emissiveIntensity={1.5} />
       </mesh>
       {/* Actual Light */}
-      <pointLight position={[0, 3.5, 0]} intensity={4.5} distance={25} decay={1.5} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.001} color="#ffeaad" />
+      <pointLight position={[0, 3.5, 0]} intensity={4.5} distance={25} decay={1.5} color="#ffeaad" />
     </group>
   );
 }

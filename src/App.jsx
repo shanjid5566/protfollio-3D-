@@ -23,7 +23,7 @@ export default function App() {
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <Canvas shadows camera={{ fov: 70, near: 0.1, far: 100 }}>
+      <Canvas shadows dpr={1} camera={{ fov: 70, near: 0.1, far: 100 }}>
         <color attach="background" args={["#0a0806"]} />
         <fog attach="fog" args={["#0a0806", 8, 40]} />
 
@@ -32,6 +32,8 @@ export default function App() {
           position={[5, 10, -5]}
           intensity={0.4}
           color="#b3c6ff"
+          castShadow
+          shadow-mapSize={[1024, 1024]}
         />
 
         <Environment preset="city" />
@@ -57,11 +59,13 @@ export default function App() {
           scale={40}
           blur={2}
           far={10}
+          resolution={512}
+          frames={1}
         />
 
         <Character />
 
-        <EffectComposer>
+        <EffectComposer multisampling={0}>
           <Bloom intensity={0.2} luminanceThreshold={0.85} />
           <Vignette eskil={false} offset={0.15} darkness={0.5} />
         </EffectComposer>

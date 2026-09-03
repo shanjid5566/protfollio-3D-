@@ -71,23 +71,43 @@ export default function Door({ id, position, rotationY = 0, label }) {
         </mesh>
       </group>
 
+      {/* Always-visible room name above the door */}
+      <Html position={[0, 3.1, 0]} center distanceFactor={8}>
+        <div
+          style={{
+            padding: '6px 16px',
+            background: 'rgba(20, 15, 10, 0.85)',
+            color: '#f5deb3',
+            borderRadius: 4,
+            fontFamily: 'Georgia, serif',
+            fontSize: 16,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            border: '1px solid #c9a15a',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+          }}
+        >
+          {label}
+        </div>
+      </Html>
+
+      {/* Interactive prompt when nearby */}
       {isNear && (
-        <Html position={[0, 3.1, 0]} center distanceFactor={8}>
+        <Html position={[0, 3.6, 0]} center distanceFactor={8}>
           <div
             style={{
-              padding: '6px 16px',
-              background: 'rgba(20, 15, 10, 0.85)',
-              color: '#f5deb3',
+              padding: '4px 12px',
+              background: 'rgba(20, 15, 10, 0.75)',
+              color: '#c9a15a',
               borderRadius: 4,
               fontFamily: 'Georgia, serif',
-              fontSize: 16,
+              fontSize: 13,
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
-              border: '1px solid #c9a15a',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+              border: '1px solid #8a7140',
             }}
           >
-            {label} — {isOpen ? 'CLICK TO CLOSE' : 'CLICK TO OPEN'}
+            {isOpen ? 'CLICK TO CLOSE' : 'CLICK TO OPEN'}
           </div>
         </Html>
       )}

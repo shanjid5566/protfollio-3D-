@@ -127,7 +127,7 @@ function CeilingLight({ position }) {
         <meshStandardMaterial color="#ffffff" emissive="#ffeaad" emissiveIntensity={1.5} />
       </mesh>
       {/* Actual Light */}
-      <pointLight position={[0, 3.6, 0]} intensity={1.2} distance={15} decay={1.5} color="#ffeaad" castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.001} />
+      <pointLight position={[0, 3.6, 0]} intensity={1.2} distance={15} decay={1.5} color="#ffeaad" />
     </group>
   );
 }
